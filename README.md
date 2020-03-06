@@ -12,7 +12,7 @@
  You'll also need to put a file called '`api-key.txt` in the `app data` folder that contains your OpenWeatherAPI key. You can sign up for a free API key by clicking [this link](https://home.openweathermap.org/users/sign_up).  
    
  ### Using the App
- The application opens up to a default city... whatever city you select will become the new default when you open the application again. The application is set to refresh every 15 minutes, but you can adjust this in the code.
+ The application opens up to a default city... whatever city you select will become the new default when you open the application again. The application is set to refresh every 10 minutes, but you can adjust this in the code.
    
 If you click the **ESCAPE** key on your keyboard, the application will close.    
   
