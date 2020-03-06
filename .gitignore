@@ -123,3 +123,13 @@ dmypy.json
 
 # Pyre type checker
 .pyre/
+
+# vs code files
+.vscode
+
+# api file private
+.app data/api-key.txt
+
+# build and distro files
+.build
+.dist
