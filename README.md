@@ -5,9 +5,9 @@
 
  ### Setup
  In order to build the application for yourself, you'll need to make sure the following libraries are installed:
- - PySimpleGUI
- - requests
- - pillow
+ - [PySimpleGUI](https://pysimplegui.readthedocs.io/en/latest/)
+ - [requests](https://requests.readthedocs.io/en/master/)
+ - [pillow](https://pillow.readthedocs.io/en/stable/)
  
  You'll also need to put a file called '`api-key.txt` in the `app data` folder that contains your OpenWeatherAPI key. You can sign up for a free API key by clicking [this link](https://home.openweathermap.org/users/sign_up).  
    
