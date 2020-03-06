@@ -128,8 +128,5 @@ dmypy.json
 .vscode
 
 # api file private
-.app data/api-key.txt
+api-key.txt
 
-# build and distro files
-.build
-.dist
