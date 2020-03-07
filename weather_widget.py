@@ -2,14 +2,12 @@ from datetime import datetime
 import gzip
 import pickle
 import json
-from collections import defaultdict
+import os
 from PIL import Image
 import requests
-import os
 import PySimpleGUI as sg
 
 sg.ChangeLookAndFeel('light blue')
-
 GOLD = "#FFC13F"
 
 def resource_path(relative_path):
@@ -61,189 +59,65 @@ def request_weather_data(city_str, units, api_key):
         weather = request.json()
 
     app_data = {}
+
     # Get all relevant variables from request variable
-    app_data['city'] = weather.get('name').title()
-    app_data['description'] = weather.get('weather')[0].get('description')
-    app_data['temp'] = "{:,.0f}°F".format(weather.get('main').get('temp'))
-    app_data['feels_like'] = "{:,.0f}°F".format(weather.get('main').get('feels_like'))
-    app_data['wind'] = "{:,.1f} m/h".format(weather.get('wind').get('speed'))
-    app_data['humidity'] = "{:,d}%".format(weather.get('main').get('humidity'))
-    app_data['precip'] = None if not weather.get('rain') else "{} mm".format(weather.get('rain').get('1h'))
-    app_data['pressure'] = "{:,d} hPa".format(weather.get('main').get('pressure'))
+    app_data['City'] = weather.get('name').title()
+    app_data['Description'] = weather.get('weather')[0].get('description')
+    app_data['Temp'] = "{:,.0f}°F".format(weather.get('main').get('temp'))
+    app_data['Feels Like'] = "{:,.0f}°F".format(weather.get('main').get('feels_like'))
+    app_data['Wind'] = "{:,.1f} m/h".format(weather.get('wind').get('speed'))
+    app_data['Humidity'] = "{:,d}%".format(weather.get('main').get('humidity'))
+    app_data['Precip 1hr'] = None if not weather.get('rain') else "{} mm".format(weather.get('rain').get('1h'))
+    app_data['Pressure'] = "{:,d} hPa".format(weather.get('main').get('pressure'))
 
     # Get the weather icon and save locally
     weather_icon = "http://openweathermap.org/img/wn/{}@2x.png".format(weather['weather'][0]['icon'])
     req = requests.get(weather_icon, stream=True)
     img = Image.open(req.raw)
     img.save(resource_path('app data/current_weather.png'))
-    app_data['icon'] = resource_path('app data/current_weather.png')
+    app_data['Icon'] = resource_path('app data/current_weather.png')
 
     # Get update time and date
-    app_data['updated'] = datetime.now().strftime("%B %d %I:%M %p")
+    app_data['Updated'] = datetime.now().strftime("%B %d %I:%M %p")
 
     return app_data
+
+
+def layout_metric(metric):
+    """ Return a pair of labels for each metric """
+    label = sg.Text(metric, font=('Arial', 10), pad=(0, 0), size=(9, 1))
+    measure = sg.Text(metric, font=('Arial', 10, 'bold'), pad=(0, 0), size=(9, 1), key=metric)
+    return [label, measure]
 
 
 def app_window(app_data):
     """ Build application window """
     app_data = request_weather_data(CITY_STR, UNITS, API_KEY)
 
-    ### -- APPLICATION LAYOUT --------------------------------------------------------------------
-
-    # Upper columns
-    col1 = sg.Column(
-        [
-            [
-                sg.Text(
-                    text=app_data['city'],
-                    font=('Arial Rounded MT Bold', 14),
-                    pad=((15, 0), (25, 0)),
-                    background_color=GOLD,
-                    enable_events=True,
-                    size=(200, 1),
-                    key='CITY')],
-            [
-                sg.Text(
-                    text=app_data['description'],
-                    font=('Arial', 12),
-                    pad=((15, 0), (0, 0)),
-                    background_color=GOLD,
-                    key='DESCRIPTION')]],
-
-        # Column params
-        pad=(0, 0),
-        size=(200, 100),
-        background_color=GOLD,
-        key='COL1')
-
-    col2 = sg.Column(
-        [
-            [
-                sg.Image(
-                    filename=app_data['icon'],
-                    pad=(0, 0),
-                    background_color=GOLD,
-                    size=(150, 100),
-                    key='ICON')]],
-
-        # Column params
-        pad=(0, 0),
-        element_justification='center',
-        size=(150, 100),
-        key='COL2',
-        background_color=GOLD)
-
-    # Lower columns
-    col3 = sg.Column(
-        [
-            [
-                sg.Text(
-                    text=app_data['temp'],
-                    font=('Haettenschweiler', 70),
-                    pad=(15, 0),
-                    key='TEMP')]],
-
-        # Column params
-        pad=((15, 15), (0, 0)),
-        size=(150, 125))
-
-    col4 = sg.Column(
-        [
-            [   # Feels Like
-                sg.Text(
-                    text='Feels Like',
-                    font=('Arial', 10),
-                    pad=((0, 0), (15, 0)),
-                    size=(9, 1)),
-                sg.Text(
-                    app_data['feels_like'],
-                    font=('Arial', 10, 'bold'),
-                    pad=((0, 0), (15, 0)),
-                    key='FEELS_LIKE')],
-            [   # Wind
-                sg.Text(
-                    text='Wind',
-                    font=('Arial', 10),
-                    pad=(0, 0),
-                    size=(9, 1)),
-                sg.Text(
-                    app_data['wind'],
-                    font=('Arial', 10, 'bold'),
-                    pad=(0, 0),
-                    key="WIND")],
-            [   # Humidity
-                sg.Text(
-                    text='Humidity',
-                    font=('Arial', 10),
-                    pad=(0, 0),
-                    size=(9, 1)),
-                sg.Text(
-                    text=app_data['humidity'],
-                    font=('Arial', 10, 'bold'),
-                    pad=(0, 0),
-                    key="HUMIDITY")],
-            [   # Precipitation
-                sg.Text(
-                    text='Precip 1hr',
-                    font=('Arial', 10),
-                    pad=(0, 0),
-                    size=(9, 1)),
-                sg.Text(
-                    text=app_data['precip'],
-                    font=('Arial', 10, 'bold'),
-                    pad=(0, 0),
-                    size=(9, 1),
-                    key="PRECIP")],
-            [   # Pressure
-                sg.Text(
-                    text='Pressure',
-                    font=('Arial', 10),
-                    pad=(0, 0),
-                    size=(9, 1)),
-                sg.Text(
-                    text=app_data['pressure'],
-                    font=('Arial', 10, 'bold'),
-                    pad=(0, 0),
-                    key="PRESSURE")]],
-
-        # Column params
-        pad=(0, 0),
-        size=(200, 125))
-
-    col5 = sg.Column(
-        [   # Time updated
-            [
-                sg.Text(
-                    text=app_data['updated'],
-                    background_color=GOLD,
-                    key="UPDATED")]],
-
-        # Column params
-        size=(100, 30),
-        background_color=GOLD,
-        pad=(0, 0),
-        key='TIME')
+    col1 = sg.Column([[sg.Text(app_data['City'], font=('Arial Rounded MT Bold', 14), pad=((15, 0), (25, 0)), background_color=GOLD, enable_events=True, size=(200, 1), key='City')],
+                     [sg.Text(app_data['Description'], font=('Arial', 12), pad=((15, 0), (0, 0)), background_color=GOLD, key='Description')]],
+        pad=(0, 0), size=(200, 100), background_color=GOLD, key='COL1')
+    
+    col2 = sg.Column([[sg.Image(filename=app_data['Icon'], pad=(0, 0), background_color=GOLD, size=(150, 100), key='Icon')]],
+        pad=(0, 0), size=(150, 100), background_color=GOLD, element_justification='center', key='COL2')
+    
+    col3 = sg.Column([[sg.Text(text=app_data['Temp'], font=('Haettenschweiler', 70), pad=(15, 0), key='Temp')]],
+        pad=((15, 15), (0, 0)), size=(150, 125))
+    
+    col4 = sg.Column([layout_metric('Feels Like'), layout_metric('Wind'), layout_metric('Humidity'),
+                      layout_metric('Precip 1hr'), layout_metric('Pressure')],
+        pad=(0, 0), size=(200, 125))
+    
+    col5 = sg.Column([[sg.Text(app_data['Updated'], background_color=GOLD, key='Updated')]],
+        pad=(0, 0), size=(100, 30), background_color=GOLD, key='TIME')
 
     layout = [[col1, col2], [col3, col4], [col5]]
 
-    ### -- APPLICATION WINDOW --------------------------------------------------------------------
+    window = sg.Window(layout=layout, title='WeatherApp', size=(350, 255), margins=(0, 0), element_justification='center',
+        finalize=True, return_keyboard_events=True, no_titlebar=True, grab_anywhere=True, keep_on_top=True)
 
-    window = sg.Window(
-        layout=layout,
-        title='WeatherApp',
-        font=('Arial', 8),
-        size=(350, 255),
-        margins=(0, 0),
-        element_justification='center',
-        finalize=True,
-        return_keyboard_events=True,
-        no_titlebar=True,
-        grab_anywhere=True,
-        keep_on_top=True)
-
-    window['COL1'].expand(expand_x=True)
-    window['COL2'].expand(expand_x=True)
-    window['TIME'].expand(expand_x=True)
+    for key in ['COL1', 'COL2', 'TIME']:
+        window[key].expand(expand_x=True)
 
     return window
 
@@ -251,10 +125,10 @@ def app_window(app_data):
 def update_weather(city_str, units, api_key, window):
     """ Update weather information on existing window """
     app_data = request_weather_data(city_str, units, api_key)
-    metrics = ['city', 'temp', 'feels_like', 'wind', 'humidity', 'precip', 
-               'description', 'icon', 'pressure', 'updated']
+    metrics = ['City', 'Temp', 'Feels Like', 'Wind', 'Humidity', 'Precip 1hr',
+               'Description', 'Icon', 'Pressure', 'Updated']
     for metric in metrics:
-        window[metric.upper()].update(app_data.get(metric))
+        window[metric].update(app_data.get(metric))
 
 
 def city_select_popup():
@@ -262,28 +136,16 @@ def city_select_popup():
     global CITY_KEY, CITY_DATA, CITY, CITY_STR
     # us cities only
     cities = sorted([x for x in CITIES.keys() if x.startswith("US")])
-    layout = [
-        [
-            sg.Combo(
-                values=cities,
-                default_value=CITY_KEY,
-                size=(25, 15),
-                font=('Arial', 14),
-                key='SELECTION',
-                enable_events=True)]]
+    layout = [[sg.Combo(values=cities, default_value=CITY_KEY, size=(25, 15), font=('Arial', 14), key='SELECTION', enable_events=True)]]
 
-    window = sg.Window(
-        layout=layout,
-        title='Select City',
-        keep_on_top=True,
-        no_titlebar=True,
-        background_color=GOLD)
+    window = sg.Window(layout=layout, title='Select City', keep_on_top=True, no_titlebar=True, background_color=GOLD)
 
     _, combo_value = window.read()
     CITY_KEY = combo_value['SELECTION']
     CITY_DATA = CITIES[CITY_KEY]
     CITY = CITY_DATA[2]
     CITY_STR = f"{CITY_DATA[2]},{CITY_DATA[0]}"
+    
     with open(resource_path('app data/default_city_key.pkl'), 'wb') as file:
         pickle.dump(CITY_KEY, file)
 
@@ -300,7 +162,7 @@ def main(refresh_rate):
         event, _ = window.read(timeout=timeout_minutes)
         if event in(None, 'Escape:27'):
             break
-        if event == 'CITY':
+        if event == 'City':
             city_select_popup()
 
         update_weather(CITY_STR, UNITS, API_KEY, window)
