@@ -12,7 +12,7 @@ GOLD = "#FFC13F"
 APP_DATA = {
     'City': 'Charlotte',
     'Country': 'US',
-    'Postal': 28273,
+    'Postal': '28273',
     'Description': 'clear skys',
     'Temp': 101.0,
     'Feels Like': 72.0,
@@ -51,8 +51,13 @@ def request_weather_data(endpoint):
     global APP_DATA
     if endpoint is None:
         return
+        sg.popup_error('Could not connect to api.')
     else:
-        response = request.urlopen(endpoint)
+        try:
+            response = request.urlopen(endpoint)
+        except request.HTTPError:
+            sg.popup_error('Information could not be found.')
+            return
     
     if response.reason == 'OK':
         weather = json.loads(response.read())
@@ -130,7 +135,7 @@ def change_city(window):
     new_city = sg.popup_get_text(message="Enter 5-digit ZIP Code OR City Name", default_text=str(APP_DATA['Postal']), no_titlebar=True, keep_on_top=True, location=(xpos+405, ypos))
     if new_city is not None:
         if new_city.isnumeric() and len(new_city) == 5 and new_city is not None:
-            APP_DATA['Postal'] = int(new_city)
+            APP_DATA['Postal'] = new_city
             request_weather_data(create_endpoint(1))
             update_metrics(window)
         else:
