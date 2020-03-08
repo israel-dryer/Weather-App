@@ -1,5 +1,10 @@
 # Weather-App
- A simple weather app built with PySimpleGUI and OpenWeatherAPI.  [Try it out on Trinket!](https://trinket.io/pygame/d8d9977bad)
+ A simple weather app built with PySimpleGUI and OpenWeatherAPI.  
+ 
+ **Online Demos***  
+- [Repl.it](https://repl.it/@IsraelDryer/Weather-Widget)
+- [Trinket!](https://trinket.io/pygame/d8d9977bad)
+
 
  ![](demo/demo1.PNG)  
 
