@@ -38,7 +38,7 @@ def create_endpoint(endpoint_type=0):
             return
     elif endpoint_type == 2:
         try:
-            endpoint = f"http://api.openweathermap.org/data/2.5/weather?q={APP_DATA['City']},us&APPID={API_KEY}&units={APP_DATA['Units']}"
+            endpoint = f"http://api.openweathermap.org/data/2.5/weather?q={APP_DATA['City'].replace(' ','%20')},us&APPID={API_KEY}&units={APP_DATA['Units']}"
             return endpoint
         except ConnectionError:
             return
@@ -51,12 +51,12 @@ def request_weather_data(endpoint):
     global APP_DATA
     if endpoint is None:
         return
-        sg.popup_error('Could not connect to api.')
+        sg.popup_error('Could not connect to api.', keep_on_top=True)
     else:
         try:
             response = request.urlopen(endpoint)
         except request.HTTPError:
-            sg.popup_error('Information could not be found.')
+            sg.popup_error('Information could not be found.', keep_on_top=True)
             return
     
     if response.reason == 'OK':
