@@ -1,7 +1,10 @@
 import datetime
 import base64
+from urllib import request
+import json
 import PySimpleGUI as sg
-import requests
+
+
 
 sg.ChangeLookAndFeel('light blue')
 GOLD = "#FFC13F"
@@ -49,10 +52,10 @@ def request_weather_data(endpoint):
     if endpoint is None:
         return
     else:
-        response = requests.get(endpoint)
+        response = request.urlopen(endpoint)
     
-    if response.ok:
-        weather = response.json()
+    if response.reason == 'OK':
+        weather = json.loads(response.read())
         APP_DATA['City'] = weather['name'].title()
         APP_DATA['Description'] = weather['weather'][0]['description']
         APP_DATA['Temp'] = "{:,.0f}°F".format(weather['main']['temp'])
@@ -64,8 +67,7 @@ def request_weather_data(endpoint):
         APP_DATA['Updated'] = 'Updated: ' + datetime.datetime.now().strftime("%B %d %I:%M:%S %p")
         
         icon_url = "http://openweathermap.org/img/wn/{}@2x.png".format(weather['weather'][0]['icon'])
-        print(icon_url)
-        APP_DATA['Icon'] = base64.b64encode(requests.get(icon_url).content)        
+        APP_DATA['Icon'] = base64.b64encode(request.urlopen(icon_url).read())
 
 
 def metric_row(metric):
@@ -154,7 +156,7 @@ def main(refresh_rate):
 
     # Try to get the current users ip location
     try:
-        postal = requests.get('https://ipapi.co/json').json()['postal']
+        postal = json.loads(request.urlopen('http://ipapi.co/json').read())['postal']
         APP_DATA['Postal'] = postal
         request_weather_data(create_endpoint(1))
     except ConnectionError:
@@ -170,8 +172,6 @@ def main(refresh_rate):
             break
         if event == '-CHANGE-':
             change_city(window)
-        else:
-            print(event, values)
     
     window.close()
 
