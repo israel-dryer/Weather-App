@@ -126,14 +126,15 @@ def change_city(window):
     global APP_DATA
     xpos, ypos = window.current_location()
     new_city = sg.popup_get_text(message="Enter 5-digit ZIP Code OR City Name", default_text=str(APP_DATA['Postal']), no_titlebar=True, keep_on_top=True, location=(xpos+405, ypos))
-    if new_city.isnumeric() and len(new_city) == 5:
-        APP_DATA['Postal'] = int(new_city)
-        request_weather_data(create_endpoint(1))
-        update_metrics(window)
-    else:
-        APP_DATA['City'] = new_city
-        request_weather_data(create_endpoint(2))
-        update_metrics(window)
+    if new_city is not None:
+        if new_city.isnumeric() and len(new_city) == 5 and new_city is not None:
+            APP_DATA['Postal'] = int(new_city)
+            request_weather_data(create_endpoint(1))
+            update_metrics(window)
+        else:
+            APP_DATA['City'] = new_city
+            request_weather_data(create_endpoint(2))
+            update_metrics(window)
 
 
 def update_metrics(window):
