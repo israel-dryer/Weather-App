@@ -19,7 +19,7 @@ ALPHA = 0.8
 APP_DATA = {
     'City': 'Charlotte',
     'Country': 'US',
-    'Postal': '28273',
+    'Postal': None,
     'Description': 'clear skys',
     'Temp': 101.0,
     'Feels Like': 72.0,
@@ -179,12 +179,16 @@ def main(refresh_rate):
 
     # Event loop
     while True:
-        event, values = window.read(timeout=timeout_minutes)
+        event, _ = window.read(timeout=timeout_minutes)
         if event in (None, '-QUIT-'):
             break
         if event == '-CHANGE-':
             change_city(window)
-    
+
+        # Update per refresh rate
+        request_weather_data(create_endpoint(2))
+        update_metrics(window)
+
     window.close()
 
 
